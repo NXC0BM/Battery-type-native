@@ -21,7 +21,8 @@ export function BatteryTypeModel({
       scene = new THREE.Scene();
     scene.background = new THREE.Color("#eeeeee");
     const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 100);
-    camera.position.set(0, 1, 5);
+    camera.position.set(0, 1, 6);
+    camera.lookAt(0, 0, 0);
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true });
