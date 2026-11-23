@@ -13,7 +13,11 @@ export const ShortDescription: FC<{ text: string | null }> = ({ text }) => {
   return (
     <div className="feedDesc">
       {text.slice(0, MAX_LENGTH).trimEnd()}…{" "}
-      <button type="button" className="feedMore" onClick={() => setExpanded(true)}>
+      <button
+        type="button"
+        className="feedMore"
+        onClick={() => setExpanded(true)}
+      >
         Ещё
       </button>
     </div>

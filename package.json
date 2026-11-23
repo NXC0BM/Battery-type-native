@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "api:generate": "swagger-typescript-api generate -p http://127.0.0.1:53000/api/docs-json -o src/modules/generated -n BatteryTypeApi.ts --axios",
     "tauri": "tauri",
     "native:build": "tauri build --no-bundle"
   },
@@ -30,6 +31,7 @@
     "@types/react-dom": "18.3.1",
     "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "4.3.3",
+    "prettier": "^3.10.1",
     "swagger-typescript-api": "^13.15.0",
     "typescript": "5.6.3",
     "vite": "5.4.11",

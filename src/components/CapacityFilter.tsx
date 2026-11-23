@@ -13,7 +13,12 @@ export const MIN_CAPACITY = 0;
 export const MAX_CAPACITY = 5000;
 
 // Фильтр по минимальной ёмкости: слайдер с числовым значением и кнопка применения
-export const CapacityFilter: FC<Props> = ({ value, setValue, onSubmit, loading }) => (
+export const CapacityFilter: FC<Props> = ({
+  value,
+  setValue,
+  onSubmit,
+  loading,
+}) => (
   <div className="capacityFilter">
     <div className="capacityFilterLabel">Ёмкость от, мА·ч</div>
     <div className="capacityFilterRow">
@@ -26,7 +31,11 @@ export const CapacityFilter: FC<Props> = ({ value, setValue, onSubmit, loading }
       />
       <span className="capacityFilterValue">{value}</span>
     </div>
-    <Button className="capacityFilterButton" disabled={loading} onClick={onSubmit}>
+    <Button
+      className="capacityFilterButton"
+      disabled={loading}
+      onClick={onSubmit}
+    >
       Показать
     </Button>
   </div>

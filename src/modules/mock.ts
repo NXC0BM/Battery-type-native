@@ -6,7 +6,8 @@ export const BATTERY_TYPES_MOCK: BatteryType[] = [
   {
     id: 2,
     modelName: "LG HG2 18650",
-    shortDescription: "Литий-ионный аккумулятор с высокой отдачей тока для фонарей, вейпов и электроинструмента.",
+    shortDescription:
+      "Литий-ионный аккумулятор с высокой отдачей тока для фонарей, вейпов и электроинструмента.",
     imageUrl: null,
     videoUrl: null,
     capacityMah: 3000,
@@ -23,7 +24,8 @@ export const BATTERY_TYPES_MOCK: BatteryType[] = [
   {
     id: 3,
     modelName: "Panasonic NCR18650B",
-    shortDescription: "Литий-ионный аккумулятор повышенной ёмкости для ноутбуков и пауэрбанков.",
+    shortDescription:
+      "Литий-ионный аккумулятор повышенной ёмкости для ноутбуков и пауэрбанков.",
     imageUrl: null,
     videoUrl: null,
     capacityMah: 3350,
@@ -40,7 +42,8 @@ export const BATTERY_TYPES_MOCK: BatteryType[] = [
   {
     id: 4,
     modelName: "Ni-MH AA Eneloop",
-    shortDescription: "Никель-металлгидридный аккумулятор формата АА с низким саморазрядом.",
+    shortDescription:
+      "Никель-металлгидридный аккумулятор формата АА с низким саморазрядом.",
     imageUrl: null,
     videoUrl: null,
     capacityMah: 1900,
@@ -56,7 +59,8 @@ export const BATTERY_TYPES_MOCK: BatteryType[] = [
   {
     id: 5,
     modelName: "Varta Industrial Ni-MH C",
-    shortDescription: "Промышленный Ni-MH аккумулятор формата C для измерительных приборов.",
+    shortDescription:
+      "Промышленный Ni-MH аккумулятор формата C для измерительных приборов.",
     imageUrl: null,
     videoUrl: null,
     capacityMah: 5000,
@@ -71,7 +75,8 @@ export const BATTERY_TYPES_MOCK: BatteryType[] = [
   {
     id: 7,
     modelName: "Sony VTC6 18650",
-    shortDescription: "Высокотоковый литий-ионный аккумулятор для мощных устройств.",
+    shortDescription:
+      "Высокотоковый литий-ионный аккумулятор для мощных устройств.",
     imageUrl: null,
     videoUrl: null,
     capacityMah: 3000,
@@ -87,7 +92,8 @@ export const BATTERY_TYPES_MOCK: BatteryType[] = [
   {
     id: 1,
     modelName: "Samsung INR18650-25R",
-    shortDescription: "Высокотоковый цилиндрический аккумулятор 18650 для мощных устройств.",
+    shortDescription:
+      "Высокотоковый цилиндрический аккумулятор 18650 для мощных устройств.",
     imageUrl: null,
     videoUrl: null,
     capacityMah: 2500,
@@ -120,8 +126,16 @@ export const BATTERY_TYPES_MOCK: BatteryType[] = [
 // Два поля по теме представлены также в вертикальном наборе атрибутов.
 for (const batteryType of BATTERY_TYPES_MOCK) {
   batteryType.attributes = [
-    { name: "Ёмкость", value: String(batteryType.capacityMah ?? ""), unit: "мА·ч" },
-    { name: "Напряжение", value: String(batteryType.nominalVoltageV ?? ""), unit: "В" },
+    {
+      name: "Ёмкость",
+      value: String(batteryType.capacityMah ?? ""),
+      unit: "мА·ч",
+    },
+    {
+      name: "Напряжение",
+      value: String(batteryType.nominalVoltageV ?? ""),
+      unit: "В",
+    },
     ...(batteryType.attributes ?? []),
   ];
 }

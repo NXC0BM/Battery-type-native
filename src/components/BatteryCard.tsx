@@ -12,7 +12,13 @@ interface Props {
   onClick: () => void;
 }
 
-export const BatteryCard: FC<Props> = ({ modelName, imageUrl, capacityMah, likesCount, onClick }) => {
+export const BatteryCard: FC<Props> = ({
+  modelName,
+  imageUrl,
+  capacityMah,
+  likesCount,
+  onClick,
+}) => {
   return (
     <Card className="batteryCard" onClick={onClick}>
       <Card.Img
