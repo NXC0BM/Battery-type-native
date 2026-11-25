@@ -24,6 +24,7 @@ export default function GridPage() {
   const [input, setInput] = useState(minCapacity),
     [items, setItems] = useState<BatteryType[]>([]),
     [visual, setVisual] = useState<BatteryType[] | null>(null),
+    [loadedScope, setLoadedScope] = useState(""),
     [total, setTotal] = useState(0),
     [loading, load] = useState(false),
     [error, fail] = useState(""),
@@ -31,6 +32,7 @@ export default function GridPage() {
   const navigate = useNavigate();
   useEffect(() => {
     let active = true;
+    setVisual(null);
     load(true);
     fail("");
     dispatch(loadBatteryTypePage({ min: minCapacity, page }))
@@ -38,6 +40,7 @@ export default function GridPage() {
       .then((r) => {
         if (active) {
           setItems(r.items);
+          setLoadedScope(`${minCapacity}:${page}:${refresh}`);
           setTotal(r.total);
         }
       })
@@ -76,7 +79,12 @@ export default function GridPage() {
           update((i) => i + 1);
         }}
       />
-      <BatteryTypeImageSearch onResults={setVisual} />
+      <BatteryTypeImageSearch
+        key={`${minCapacity}:${page}:${refresh}`}
+        items={items}
+        disabled={loading || loadedScope !== `${minCapacity}:${page}:${refresh}`}
+        onResults={setVisual}
+      />
       <button onClick={() => update((i) => i + 1)}>Обновить каталог</button>
       {error && <p role="alert">{error}</p>}
       {loading ? (
@@ -102,7 +110,7 @@ export default function GridPage() {
           {!visual && (
             <div className="pagination">
               <button
-                disabled={page <= 1}
+                disabled={loading || page <= 1}
                 onClick={() => dispatch(setPage(page - 1))}
               >
                 Назад
@@ -111,7 +119,7 @@ export default function GridPage() {
                 Страница {page} из {Math.max(1, Math.ceil(total / 24))}
               </span>
               <button
-                disabled={page * 24 >= total}
+                disabled={loading || page * 24 >= total}
                 onClick={() => dispatch(setPage(page + 1))}
               >
                 Вперёд

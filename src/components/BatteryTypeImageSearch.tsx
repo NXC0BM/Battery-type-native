@@ -1,24 +1,35 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  api,
   BatteryType,
-  getFeedItem,
   isMock,
   batteryTypeError,
 } from "../modules/batteryApi";
+import { useSelector } from "react-redux";
+import { RootState, useBatteryDispatch } from "../modules/store";
+import { cacheTextVectors } from "../modules/clipCache";
 export function BatteryTypeImageSearch({
+  items,
+  disabled,
   onResults,
 }: {
+  items: BatteryType[];
+  disabled: boolean;
   onResults: (items: BatteryType[] | null) => void;
 }) {
   const worker = useRef<Worker>();
+  const imageUrl = useRef("");
+  const dispatch = useBatteryDispatch();
+  const textVectors = useSelector((s: RootState) => s.clip.textVectors);
   const [status, setStatus] = useState(""),
     [busy, setBusy] = useState(false),
     [threshold, setThreshold] = useState(0.63),
     [topK, setTopK] = useState(3);
-  useEffect(() => () => worker.current?.terminate(), []);
+  useEffect(() => () => {
+    worker.current?.terminate();
+    if (imageUrl.current) URL.revokeObjectURL(imageUrl.current);
+  }, []);
   async function search(file?: File) {
-    if (!file) return;
+    if (!file || disabled || busy) return;
     if (file.size > 10 * 1024 * 1024) {
       setStatus("Изображение должно быть не более 10 МБ");
       return;
@@ -27,13 +38,21 @@ export function BatteryTypeImageSearch({
     setStatus("Чтение описаний аккумуляторов…");
     let url = "";
     try {
-      const captions = (await api.get("/battery_type/descriptions")).data;
+      // Only the already loaded pagination page is eligible, including duplicate texts.
+      const candidates = items.filter(i => i.shortDescriptionEn?.trim());
+      const captions = candidates.map(i => ({ id: i.id, description: i.shortDescriptionEn! }));
+      if (!captions.length) throw new Error("На текущей странице нет английских описаний");
       url = URL.createObjectURL(file);
+      imageUrl.current = url;
       worker.current ??= new Worker(
         new URL("../modules/clip.worker.ts", import.meta.url),
         { type: "module" },
       );
-      worker.current.onmessage = async (e) => {
+      worker.current.onmessage = (e) => {
+        if (e.data.textVectors) {
+          dispatch(cacheTextVectors(e.data.textVectors));
+          return;
+        }
         if (e.data.status) {
           setStatus(e.data.status);
           return;
@@ -45,13 +64,13 @@ export function BatteryTypeImageSearch({
           return;
         }
         try {
-          const items = await Promise.all(
-            e.data.results.map((r: { id: number }) => getFeedItem(r.id)),
-          );
-          onResults(items.filter((i): i is BatteryType => i !== null));
+          const found = e.data.results.map((r: { id: number }) =>
+            candidates.find(i => i.id === r.id),
+          ).filter((i: BatteryType | undefined): i is BatteryType => i !== undefined);
+          onResults(found);
           setStatus(
             "Найдено: " +
-              items.length +
+              found.length +
               ". Близость (1 + cos) / 2: " +
               e.data.scores
                 .slice(0, topK)
@@ -69,7 +88,7 @@ export function BatteryTypeImageSearch({
         setStatus(e.message);
         setBusy(false);
       };
-      worker.current.postMessage({ image: url, captions, threshold, topK });
+      worker.current.postMessage({ image: url, captions, textVectors, threshold, topK });
     } catch (e) {
       if (url) URL.revokeObjectURL(url);
       setStatus(batteryTypeError(e));
@@ -81,7 +100,7 @@ export function BatteryTypeImageSearch({
       <h2 style={{ fontSize: 18 }}>Найти аккумулятор по изображению</h2>
       <p>
         Близость = (1 + cos) / 2. Порог 0,63, TopK 3 — начальные параметры для
-        этого каталога.
+        текущей страницы. Сравнивается загруженная картинка с английскими описаниями карточек.
       </p>
       <label>
         Порог{" "}
@@ -112,10 +131,11 @@ export function BatteryTypeImageSearch({
         aria-label="Изображение аккумулятора"
         type="file"
         accept="image/*"
-        disabled={busy || isMock}
+        disabled={busy || disabled || isMock}
         onChange={(e) => void search(e.target.files?.[0])}
       />
       <button
+        disabled={busy}
         onClick={() => {
           onResults(null);
           setStatus("");

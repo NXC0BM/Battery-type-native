@@ -1,3 +1,4 @@
+import { clipReducer } from "./clipCache";
 import {
   configureStore,
   createSlice,
@@ -32,7 +33,7 @@ const slice = createSlice({
 });
 export const { setCapacity, setPage, setUser } = slice.actions;
 export const store = configureStore({
-  reducer: { battery_type: slice.reducer },
+  reducer: { battery_type: slice.reducer, clip: clipReducer },
 });
 export type RootState = ReturnType<typeof store.getState>;
 export const useBatteryType = () =>

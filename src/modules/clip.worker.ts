@@ -8,9 +8,9 @@ import {
 } from "@huggingface/transformers";
 env.allowLocalModels = false;
 env.backends.onnx.wasm!.proxy = false;
-const MODEL = "Xenova/clip-vit-base-patch32";
+import { CLIP_MODEL as MODEL, clipCacheKey, TextVectors } from "./clipCache";
 let ready: Promise<any[]> | undefined;
-const vectors = new Map<string, number[]>();
+
 function cosine(a: number[], b: number[]) {
   let dot = 0,
     aa = 0,
@@ -26,6 +26,7 @@ self.onmessage = async (
   e: MessageEvent<{
     image: string;
     captions: { id: number; description: string }[];
+    textVectors: TextVectors;
     threshold: number;
     topK: number;
   }>,
@@ -47,18 +48,19 @@ self.onmessage = async (
       }),
     ]);
     const [tokenizer, processor, textModel, imageModel] = await ready;
+    const vectors = { ...e.data.textVectors };
     for (const caption of e.data.captions) {
-      if (!vectors.has(caption.description)) {
+      const key = clipCacheKey(caption.description);
+      if (!vectors[key]) {
         const output = await textModel(
           await tokenizer(caption.description, {
             padding: true,
             truncation: true,
           }),
         );
-        vectors.set(
-          caption.description,
-          Array.from(output.text_embeds.data) as number[],
-        );
+        vectors[key] = Array.from(output.text_embeds.data) as number[];
+        // Persist each successful text computation even if image decoding fails.
+        self.postMessage({ textVectors: { [key]: vectors[key] } });
       }
     }
     const vision = await imageModel(
@@ -68,7 +70,7 @@ self.onmessage = async (
     // Map cosine [-1,1] to similarity [0,1]; keep the raw cosine for calibration.
     const scores = e.data.captions
       .map((c) => {
-        const rawCosine = cosine(image, vectors.get(c.description)!);
+        const rawCosine = cosine(image, vectors[clipCacheKey(c.description)]);
         return { ...c, rawCosine, score: (1 + rawCosine) / 2 };
       })
       .sort((a, b) => b.score - a.score);
